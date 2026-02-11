@@ -91,5 +91,25 @@ Repeat consistently.
 ---
 
 ## Live Demo
+https://ishujais.github.io/pm-problem-solving-prompt-builder
+
+
+---
+
+## Built By
+
+**Anshuman Jaiswal**  
+Associate Product Manager  
+Building thinking systems in public.
+
+---
+
+## If This Helps You
+
+- ⭐ Star the repo  
+- Share with someone preparing for PM interviews  
+- Improve it and raise a PR  
+
+Let’s raise the bar for Product thinking.
 
 
