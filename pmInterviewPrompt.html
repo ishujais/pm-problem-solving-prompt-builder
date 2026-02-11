@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PM Problem Solving — Prompt Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --surface: #161616;
+    --card: #1c1c1c;
+    --border: #2a2a2a;
+    --accent: #e8c547;
+    --accent2: #ff6b35;
+    --accent3: #4ecdc4;
+    --text: #f0ede8;
+    --muted: #7a7672;
+    --tag-bg: #252218;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Lora', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 9999;
+    opacity: 0.5;
+  }
+
+  .page-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 24px 100px;
+  }
+
+  /* HEADER */
+  .header {
+    margin-bottom: 56px;
+    animation: fadeDown 0.7s ease both;
+  }
+
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .eyebrow::before {
+    content: '';
+    display: block;
+    width: 28px; height: 1px;
+    background: var(--accent);
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(36px, 6vw, 62px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 560px;
+    line-height: 1.7;
+  }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent2);
+  }
+
+  /* TOGGLE CHIPS */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 8px 14px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    user-select: none;
+    letter-spacing: 0.04em;
+  }
+  .chip:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+  .chip.active {
+    background: var(--tag-bg);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 40px 0;
+  }
+
+  /* PROMPT AREA */
+  .prompt-wrapper {
+    position: relative;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+
+  .prompt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .prompt-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .copy-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 8px 18px;
+    border-radius: 4px;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .copy-btn:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+  .copy-btn.copied {
+    background: var(--accent3);
+    border-color: var(--accent3);
+    color: var(--bg);
+  }
+
+  .prompt-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.85;
+    color: #c8c4bd;
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 340px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .prompt-box:hover {
+    border-color: #3a3a3a;
+  }
+
+  /* Syntax highlights inside prompt */
+  .prompt-box .ph-role { color: var(--accent); font-weight: 500; }
+  .prompt-box .ph-section { color: var(--accent2); }
+  .prompt-box .ph-bracket { color: var(--accent3); }
+  .prompt-box .ph-inst { color: #e0dbd2; }
+
+  /* CORNER BADGE */
+  .corner-badge {
+    position: absolute;
+    top: 12px; right: 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--bg);
+    padding: 4px 8px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+  }
+
+  /* USAGE GUIDE */
+  .usage-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 40px;
+    animation: fadeUp 0.9s 0.3s ease both;
+  }
+
+  .usage-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .usage-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+  }
+  .usage-card.y::before { background: var(--accent); }
+  .usage-card.o::before { background: var(--accent2); }
+  .usage-card.t::before { background: var(--accent3); }
+
+  .usage-card-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    opacity: 0.12;
+    position: absolute;
+    top: 10px; right: 16px;
+    line-height: 1;
+  }
+
+  .usage-card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .usage-card-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section:nth-child(2) { animation-delay: 0.1s; }
+  .section:nth-child(3) { animation-delay: 0.15s; }
+  .section:nth-child(4) { animation-delay: 0.2s; }
+
+  /* CHAR COUNT */
+  .meta-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .pulse-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent3);
+    margin-right: 6px;
+    animation: pulse 2s ease infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <div class="header">
+    <div class="eyebrow">PM Interview Toolkit</div>
+    <h1>Problem Solving<br><span>Prompt Builder</span></h1>
+    <p class="subtitle">Customize a master prompt to feed into any LLM. It will coach you to deeply evaluate problems, run case studies, and define clear success metrics so you can stop failing first round interviews.</p>
+  </div>
+
+  <!-- FOCUS AREAS -->
+  <div class="section">
+    <div class="section-label"><span class="dot"></span>Select your weak spots (toggle all that apply)</div>
+    <div class="chips" id="focusChips">
+      <div class="chip active" data-key="problemDig">Problem Digging</div>
+      <div class="chip active" data-key="caseStudy">Case Study Framework</div>
+      <div class="chip active" data-key="metrics">Metrics Definition</div>
+      <div class="chip active" data-key="rootCause">Root Cause Analysis</div>
+      <div class="chip" data-key="prioritization">Prioritization</div>
+      <div class="chip" data-key="userEmpathy">User Empathy</div>
+      <div class="chip" data-key="bizImpact">Business Impact</div>
+      <div class="chip" data-key="tradeoffs">Trade-off Reasoning</div>
+    </div>
+  </div>
+
+  <!-- INTERVIEW TYPE -->
+  <div class="section">
+    <div class="section-label"><span class="dot" style="background:var(--accent2)"></span>Interview scenario type</div>
+    <div class="chips" id="typeChips">
+      <div class="chip active" data-type="product_sense">Product Sense</div>
+      <div class="chip" data-type="execution">Execution / Metrics</div>
+      <div class="chip" data-type="strategy">Strategy / Case Study</div>
+      <div class="chip" data-type="estimation">Estimation</div>
+    </div>
+  </div>
+
+  <!-- DIFFICULTY -->
+  <div class="section">
+    <div class="section-label"><span class="dot" style="background:var(--accent3)"></span>Coaching depth</div>
+    <div class="chips" id="depthChips">
+      <div class="chip" data-depth="guided">Guided (with hints)</div>
+      <div class="chip active" data-depth="coaching">Coaching Mode</div>
+      <div class="chip" data-depth="strict">Strict Interviewer</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- GENERATED PROMPT -->
+  <div class="prompt-wrapper">
+    <div class="prompt-header">
+      <div class="prompt-title">Your Master Prompt</div>
+      <button class="copy-btn" id="copyBtn" onclick="copyPrompt()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy Prompt
+      </button>
+    </div>
+
+    <div class="prompt-box" id="promptBox">
+      <span class="corner-badge">READY TO USE</span>
+      <span id="promptText"></span>
+    </div>
+
+    <div class="meta-bar">
+      <span><span class="pulse-dot"></span>Live — updates as you toggle above</span>
+      <span id="charCount">— chars</span>
+    </div>
+  </div>
+
+  <!-- HOW TO USE -->
+  <div class="usage-grid">
+    <div class="usage-card y">
+      <div class="usage-card-num">01</div>
+      <div class="usage-card-title">Copy & Paste</div>
+      <div class="usage-card-desc">Paste this prompt into ChatGPT, Claude, or Gemini at the start of any session.</div>
+    </div>
+    <div class="usage-card o">
+      <div class="usage-card-num">02</div>
+      <div class="usage-card-title">Give a Problem</div>
+      <div class="usage-card-desc">Follow up with: "Here's a PM interview question — walk me through it using the framework above."</div>
+    </div>
+    <div class="usage-card t">
+      <div class="usage-card-num">03</div>
+      <div class="usage-card-title">Ask for Debrief</div>
+      <div class="usage-card-desc">After answering, ask: "Now critique my answer — what was weak and what would an interviewer note?"</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const state = {
+    focus: new Set(['problemDig','caseStudy','metrics','rootCause']),
+    type: 'product_sense',
+    depth: 'coaching'
+  };
+
+  const focusContent = {
+    problemDig: `
+## PROBLEM EXCAVATION
+When I present a problem, do NOT let me jump to solutions. First, push me hard to dig into the problem space:
+- Ask: "Who exactly is experiencing this? What is their situation?"
+- Ask: "Why does this problem exist? What's the underlying tension?"
+- Ask: "What happens if this problem is NOT solved?"
+- Force me to state: Problem Statement → Affected User Segment → Root Friction → Downstream Impact
+- If I go shallow, call it out and ask me to go one level deeper.`,
+
+    caseStudy: `
+## CASE STUDY STRUCTURE
+When I work through a case, enforce this structure strictly and stop me if I skip steps:
+1. CLARIFY — What is the goal? What constraints exist? What does success look like?
+2. SEGMENT — Who are the users? What are the distinct user groups?
+3. EXPLORE — What are the possible approaches or solutions? (Breadth first, then narrow)
+4. PRIORITIZE — Why this approach over others? What trade-offs are you making?
+5. DEFINE MVP — What is the smallest version that tests the hypothesis?
+6. MEASURE — How will you know if it worked?
+After I answer, give me explicit feedback on which steps I skimped on.`,
+
+    metrics: `
+## METRICS COACHING
+Every time I propose a product direction, force me to define metrics properly:
+- Challenge me: "What is your North Star Metric? Why?"
+- Push me to separate: Input metrics (things we control) vs. Output metrics (results)
+- Ask me to identify: Guardrail metrics (things we must NOT break)
+- If I give vague metrics like "engagement" or "retention", make me get specific: retention of what, over what period, for which cohort?
+- Teach me to build a metrics tree: Goal → Primary Metric → Supporting Metrics → Guardrails`,
+
+    rootCause: `
+## ROOT CAUSE ANALYSIS
+When I diagnose a problem (e.g., "a metric dropped"), do not let me guess. Coach me through:
+- 5 Whys: Keep asking "why" until I reach a structural or systemic cause
+- Rule out surface explanations vs. structural explanations
+- Ask me: "Is this internal (product change, bug, policy) or external (seasonality, competitor, macro)?"
+- Push me to form a hypothesis before I analyze data
+- Make me think: "What would PROVE or DISPROVE your hypothesis?"`,
+
+    prioritization: `
+## PRIORITIZATION THINKING
+When I need to prioritize features or work, guide me to:
+- Use a structured framework (e.g., RICE, ICE, Value vs. Effort matrix)
+- Articulate: Why this over that? What assumptions are you making?
+- Challenge my reasoning: "What if the effort estimate is 3x higher — does your decision change?"
+- Push me to align priorities to a stated company or product goal`,
+
+    userEmpathy: `
+## USER EMPATHY & RESEARCH THINKING
+Push me to think from the user's perspective, not the product's:
+- Ask: "What does the user feel at each step?"
+- Challenge me: "Have you assumed this, or is there data/research to support it?"
+- Make me distinguish between: What users SAY, what they DO, and what they NEED
+- Prompt me to propose how I'd validate assumptions (e.g., user interviews, surveys, A/B tests)`,
+
+    bizImpact: `
+## BUSINESS IMPACT THINKING
+Every product decision must connect to business value. Coach me to:
+- Answer: "Why does this matter to the company, not just the user?"
+- Map features to revenue, retention, acquisition, or cost reduction
+- Ask me to estimate rough business impact (even if directional)
+- Challenge me: "Is this a nice-to-have or a must-have from a business lens?"`,
+
+    tradeoffs: `
+## TRADE-OFF REASONING
+Force me to never present one option as obviously correct. Coach me to:
+- Always present 2–3 approaches before recommending one
+- Explicitly name what I'm giving up with each choice
+- Reason about short-term vs. long-term trade-offs
+- Consider: technical debt, user experience, team capacity, and strategic bets`
+  };
+
+  const typeIntro = {
+    product_sense: `You are an expert PM interview coach specializing in Product Sense questions — building the right product for the right users. Your job is to help me think like a senior product leader at a top tech company.`,
+    execution: `You are an expert PM interview coach specializing in Execution and Metrics questions — diagnosing problems, defining KPIs, and making data-driven decisions. Your job is to sharpen my analytical and quantitative product thinking.`,
+    strategy: `You are an expert PM interview coach specializing in Product Strategy and Case Study questions — market analysis, competitive positioning, and long-term planning. Your job is to help me think strategically and structure my reasoning.`,
+    estimation: `You are an expert PM interview coach specializing in Estimation questions — market sizing, back-of-envelope math, and structured approximation. Your job is to help me build strong numerical reasoning and structured decomposition.`
+  };
+
+  const depthMode = {
+    guided: `
+## COACHING MODE: GUIDED
+- Give me hints before I get stuck
+- After each response, tell me what I did well and what to add
+- If I'm going in a wrong direction, redirect me gently with a leading question
+- Score my answers out of 10 with specific reasoning`,
+
+    coaching: `
+## COACHING MODE: ACTIVE COACH
+- Let me work through problems fully before jumping in
+- After my response, give brutally honest feedback: what was strong, what was weak, what would an interviewer think
+- Point out when I use buzzwords without substance
+- Show me what a strong answer would look like after I give mine`,
+
+    strict: `
+## COACHING MODE: STRICT INTERVIEWER
+- Behave exactly like a hard PM interviewer at a FAANG company
+- Push back on everything: "Can you be more specific?", "Why?", "So what?"
+- Do NOT volunteer answers or hints — make me struggle and earn them
+- At the end, give me a Pass / No-Pass verdict with specific reasons`
+  };
+
+  function buildPrompt() {
+    const activeType = state.type;
+    const activeDepth = state.depth;
+    const activeFocus = [...state.focus];
+
+    let prompt = typeIntro[activeType];
+    prompt += `\n\n---\n\n# HOW TO WORK WITH ME\n`;
+    prompt += `\nI am a Product Manager preparing for interviews. I struggle with structured problem-solving. Your role is NOT to give me the answer — it is to coach me to find it myself through the right questions and frameworks.\n`;
+
+    activeFocus.forEach(key => {
+      if (focusContent[key]) {
+        prompt += `\n${focusContent[key]}`;
+      }
+    });
+
+    prompt += `\n\n---\n`;
+    prompt += depthMode[activeDepth];
+
+    prompt += `\n\n---\n\n## STARTING INSTRUCTION\nWhen I give you a problem statement or interview question, start by acknowledging it, then ask me ONE clarifying question to get me thinking — before I dive in. Do not give me the framework upfront; draw it out of me.\n\nReady? I'll give you my first PM interview question now.`;
+
+    return prompt;
+  }
+
+  function renderPrompt() {
+    const text = buildPrompt();
+    const el = document.getElementById('promptText');
+    // Render with light syntax coloring
+    let html = text
+      .replace(/^(You are.*?)\n/m, '<span class="ph-role">$1</span>\n')
+      .replace(/(##\s.+)/g, '<span class="ph-section">$1</span>')
+      .replace(/(\[.+?\])/g, '<span class="ph-bracket">$1</span>');
+    el.innerHTML = html;
+    document.getElementById('charCount').textContent = `${text.length.toLocaleString()} chars`;
+  }
+
+  // CHIPS INTERACTION
+  document.querySelectorAll('#focusChips .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const key = chip.dataset.key;
+      if (state.focus.has(key)) {
+        if (state.focus.size > 1) { // Keep at least 1 active
+          state.focus.delete(key);
+          chip.classList.remove('active');
+        }
+      } else {
+        state.focus.add(key);
+        chip.classList.add('active');
+      }
+      renderPrompt();
+    });
+  });
+
+  document.querySelectorAll('#typeChips .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#typeChips .chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      state.type = chip.dataset.type;
+      renderPrompt();
+    });
+  });
+
+  document.querySelectorAll('#depthChips .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#depthChips .chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      state.depth = chip.dataset.depth;
+      renderPrompt();
+    });
+  });
+
+  function copyPrompt() {
+    const text = buildPrompt();
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy Prompt`;
+        btn.classList.remove('copied');
+      }, 2500);
+    });
+  }
+
+  renderPrompt();
+</script>
+</body>
+</html>
