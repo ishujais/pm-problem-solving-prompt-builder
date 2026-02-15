@@ -91,7 +91,7 @@ Repeat consistently.
 ---
 
 ## Live Demo
-https://ishujais.github.io/pm-problem-solving-prompt-builder](https://web-automation.github.io/pm-problem-solving-prompt-builder
+https://web-automation.github.io/pm-problem-solving-prompt-builder
 
 
 ---
